@@ -135,6 +135,7 @@ export class PostsService {
           `An error occurred while posting on ${firstPost.integration?.providerIdentifier}`,
           true
         );
+
         return;
       }
 
@@ -159,6 +160,25 @@ export class PostsService {
             : ''
         }`,
         true
+      );
+
+      if (err instanceof BadBody) {
+        console.error(
+          '[Error] posting on',
+          firstPost.integration?.providerIdentifier,
+          err.identifier,
+          err.json,
+          err.body,
+          err
+        );
+
+        return ;
+      }
+
+      console.error(
+        '[Error] posting on',
+        firstPost.integration?.providerIdentifier,
+        err
       );
     }
   }
@@ -285,17 +305,6 @@ export class PostsService {
     } catch (err) {
       if (err instanceof RefreshToken) {
         return this.postSocial(integration, posts, true);
-      }
-
-      if (
-        err instanceof BadBody &&
-        process.env.EMAIL_FROM_ADDRESS === 'nevo@postiz.com'
-      ) {
-        await this._notificationService.sendEmail(
-          'nevo@positz.com',
-          'Bad body',
-          JSON.stringify(err.body)
-        );
       }
 
       throw err;
